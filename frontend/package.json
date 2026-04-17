@@ -14,6 +14,7 @@
     "@fontsource-variable/geist": "^5.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+<<<<<<< HEAD
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
@@ -22,6 +23,9 @@
     "motion": "^12.38.0",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
+=======
+    "lucide-react": "^1.8.0",
+>>>>>>> e0c660b (Fix: add context files, install lucide-react, resolve TS errors)
     "react": "^19.2.4",
     "react-day-picker": "^9.14.0",
     "react-dnd": "^16.0.1",

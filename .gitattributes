@@ -26,3 +26,7 @@
 *.ico binary
 *.pdf binary
 *.woff2 binary
+
+# Exclude CSS from language statistics
+*.css linguist-documentation=false
+*.css linguist-vendored=true

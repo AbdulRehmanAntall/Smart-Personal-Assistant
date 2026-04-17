@@ -1,13 +1,28 @@
+# Handle line endings automatically for text files
 * text=auto
 
-# Python files
-*.py text
+# Code - Ensure LF (Linux style) to prevent Windows vs Mac conflicts
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.py text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.json text eol=lf
 
-# Shell scripts
+# Scripts - Preserve specific endings for execution
 *.sh text eol=lf
-
-# Windows scripts
 *.bat text eol=crlf
 
-# Markdown
+# Documentation
 *.md text
+
+# Graphics/Binary - Ensure Git doesn't try to "fix" these (which corrupts them)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff2 binary

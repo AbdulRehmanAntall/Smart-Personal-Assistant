@@ -1,33 +1,46 @@
-# Python cache
+# --- Node / Frontend (CRITICAL) ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+
+# --- Environment Variables ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Python / Backend ---
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Virtual environment
 venv/
-.env
-
-# IDE files
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Database
-*.db
-*.sqlite3
-
-# Python packaging
+.venv/
 build/
 dist/
 *.egg-info/
 
-# Testing
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Logs & Databases ---
+*.log
+*.db
+*.sqlite3
+
+# --- Testing ---
 .coverage
+htmlcov/
 .pytest_cache/
+.rpt.stats.json

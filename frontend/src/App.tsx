@@ -7,7 +7,7 @@ import './App.css'
 import LandingPage from './pages/LandingPage'
 
 // Future Pages (NOT CREATED YET)
-// import LoginPage from './pages/LoginPage'
+import LoginPage from './pages/LoginPage'
 // import SignUpPage from './pages/SignUpPage'
 
 // import DashboardPage from './pages/DashboardPage'
@@ -40,10 +40,10 @@ function AppRoutes() {
       {/* ================= PUBLIC ROUTES ================= */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* FUTURE PUBLIC ROUTES
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/signup" element={<PublicRoute><SignUpPage /></PublicRoute>} />
-      */}
+      {// FUTURE PUBLIC ROUTES
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        //<Route path="/signup" element={<PublicRoute><SignUpPage /></PublicRoute>} />
+      }
 
       {// ================= PROTECTED ROUTES =================
         (

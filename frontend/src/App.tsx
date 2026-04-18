@@ -14,7 +14,7 @@ import CalendarPage from './pages/CalendarPage';
 import DailyNewsPage from './pages/DailyNewsPage';
 import SmartEmailPage from './pages/SmartEmailPage';
 import ClassroomPendingWorkPage from './pages/ClassroomPendingWorkPage';
-//import SettingsPage from './pages/SettingsPage';
+import SettingsPage from './pages/SettingsPage';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <Layout>{children}</Layout> : <Navigate to="/login" />;
@@ -41,7 +41,7 @@ function AppRoutes() {
       <Route path="/news" element={<ProtectedRoute><DailyNewsPage /></ProtectedRoute>} />
       <Route path="/email" element={<ProtectedRoute><SmartEmailPage /></ProtectedRoute>} />
       <Route path="/classroom" element={<ProtectedRoute><ClassroomPendingWorkPage /></ProtectedRoute>} />
-
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" />} />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Send, Bot, User } from 'lucide-react';
 import { Input } from '../components/ui/input';
+import { apiFetch } from '../lib/api';
 
 interface Message {
   id: number;
@@ -19,51 +20,50 @@ export default function AvailabilityManagerPage() {
     },
   ]);
   const [inputText, setInputText] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || isSending) return;
+    const messageText = inputText;
+    setInputText('');
+    setIsSending(true);
 
     // Add user message
     const userMessage: Message = {
       id: messages.length + 1,
-      text: inputText,
+      text: messageText,
       sender: 'user',
       timestamp: new Date(),
     };
 
     setMessages([...messages, userMessage]);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: messages.length + 2,
-        text: generateAIResponse(inputText),
-        sender: 'ai',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
-
-    setInputText('');
-  };
-
-  const generateAIResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    if (input.includes('free') || input.includes('available')) {
-      return "Based on your calendar, you have free time slots on:\n• Tomorrow at 2:00 PM - 4:00 PM\n• Friday at 10:00 AM - 12:00 PM\n• Saturday all day\n\nWould you like me to schedule something during any of these times?";
-    }
-    
-    if (input.includes('schedule') || input.includes('meeting')) {
-      return "I can help you schedule that! What time works best for you? I'll make sure it doesn't conflict with your classes and assignments.";
-    }
-    
-    if (input.includes('busy') || input.includes('workload')) {
-      return "Looking at your schedule, you have 5 assignments due this week and 3 meetings scheduled. I recommend:\n• Blocking 2 hours tomorrow for the Math assignment\n• Moving your Friday study session to Saturday morning\n• Taking a break on Sunday to recharge";
-    }
-    
-    return "I understand. Let me help you with that. Based on your current schedule and commitments, I can suggest the best times for your activities and help you maintain a healthy work-life balance.";
+    void (async () => {
+      try {
+        const data = await apiFetch<{ reply: string }>('/assistant/availability/chat', {
+          method: 'POST',
+          body: JSON.stringify({ message: messageText }),
+        });
+        const aiResponse: Message = {
+          id: messages.length + 2,
+          text: data.reply,
+          sender: 'ai',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      } catch (e) {
+        const aiResponse: Message = {
+          id: messages.length + 2,
+          text: e instanceof Error ? e.message : 'Sorry, I could not process that request right now.',
+          sender: 'ai',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      } finally {
+        setIsSending(false);
+      }
+    })();
   };
 
   return (
@@ -132,7 +132,7 @@ export default function AvailabilityManagerPage() {
             <button
               type="submit"
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!inputText.trim()}
+              disabled={!inputText.trim() || isSending}
             >
               <Send className="w-5 h-5" />
             </button>

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, MapPin, DollarSign, Briefcase, Bookmark, Send, Trash2, Filter } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { apiFetch } from '../lib/api';
 
 interface Job {
   id: number;
+  job_id?: string;
   title: string;
   company: string;
   location: string;
@@ -12,6 +14,7 @@ interface Job {
   salary: string;
   description: string;
   saved: boolean;
+  url?: string;
 }
 
 export default function JobFinderPage() {
@@ -19,63 +22,53 @@ export default function JobFinderPage() {
   const [locationFilter, setLocationFilter] = useState('all');
   const [jobTypeFilter, setJobTypeFilter] = useState('all');
 
-  const [jobs, setJobs] = useState<Job[]>([
-    {
-      id: 1,
-      title: 'Software Engineering Intern',
-      company: 'TechCorp Inc.',
-      location: 'San Francisco, CA',
-      type: 'Internship',
-      salary: '$25-35/hr',
-      description: 'Join our innovative team to work on cutting-edge web applications using React and Node.js.',
-      saved: false,
-    },
-    {
-      id: 2,
-      title: 'Data Science Research Assistant',
-      company: 'University Lab',
-      location: 'Remote',
-      type: 'Part-time',
-      salary: '$20-25/hr',
-      description: 'Assist with machine learning research projects and data analysis for academic studies.',
-      saved: true,
-    },
-    {
-      id: 3,
-      title: 'UI/UX Design Intern',
-      company: 'Creative Studios',
-      location: 'New York, NY',
-      type: 'Internship',
-      salary: '$22-30/hr',
-      description: 'Design beautiful and intuitive user interfaces for mobile and web applications.',
-      saved: false,
-    },
-    {
-      id: 4,
-      title: 'Marketing Coordinator',
-      company: 'StartupHub',
-      location: 'Austin, TX',
-      type: 'Full-time',
-      salary: '$45k-55k/year',
-      description: 'Coordinate marketing campaigns and social media strategy for growing startup.',
-      saved: false,
-    },
-    {
-      id: 5,
-      title: 'Teaching Assistant - Computer Science',
-      company: 'State University',
-      location: 'Boston, MA',
-      type: 'Part-time',
-      salary: '$18-22/hr',
-      description: 'Help students with programming assignments and conduct lab sessions.',
-      saved: true,
-    },
-  ]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('q', searchQuery);
+        if (locationFilter !== 'all') params.set('location', locationFilter);
+        if (jobTypeFilter !== 'all') params.set('type', jobTypeFilter);
+        const url = `/jobs${params.toString() ? `?${params.toString()}` : ''}`;
+        const data = await apiFetch<Job[]>(url);
+        setJobs(data);
+      } catch (e) {
+        setJobs([]);
+        setError(e instanceof Error ? e.message : 'Failed to load jobs');
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
+  }, [searchQuery, locationFilter, jobTypeFilter]);
 
   const toggleSave = (jobId: number) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? { ...job, saved: !job.saved } : job
-    ));
+    const job = jobs.find((j) => j.id === jobId);
+    if (!job) return;
+    const next = !job.saved;
+    setJobs(jobs.map(j => j.id === jobId ? { ...j, saved: next } : j));
+    if (job.job_id) {
+      const path = `/jobs/${encodeURIComponent(job.job_id)}/save`;
+      void apiFetch(path, {
+        method: next ? 'POST' : 'DELETE',
+        body: next ? JSON.stringify({
+          job_id: job.job_id,
+          title: job.title,
+          company: job.company,
+          location: job.location,
+          url: job.url ?? '',
+        }) : undefined,
+      }).catch(() => {
+        // revert on failure
+        setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, saved: job.saved } : j)));
+      });
+    }
   };
 
   const deleteJob = (jobId: number) => {
@@ -151,6 +144,16 @@ export default function JobFinderPage() {
 
       {/* Job Listings */}
       <div className="space-y-4">
+        {loading && (
+          <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#2A2A2A] text-[#A3A3A3]">
+            Loading jobs...
+          </div>
+        )}
+        {!loading && error && (
+          <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#C2410C]/30 text-[#EA580C]">
+            {error}
+          </div>
+        )}
         {filteredJobs.map((job) => (
           <div
             key={job.id}
@@ -195,7 +198,12 @@ export default function JobFinderPage() {
                 <span className="text-sm">{job.saved ? 'Saved' : 'Save'}</span>
               </button>
               
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all">
+              <button
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all"
+                onClick={() => {
+                  if (job.url) window.open(job.url, '_blank', 'noopener,noreferrer');
+                }}
+              >
                 <Send className="w-4 h-4" />
                 <span className="text-sm">Apply</span>
               </button>

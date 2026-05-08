@@ -17,7 +17,7 @@ import {
   ChevronRight,
   ChevronLeft
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { useTheme } from '../context/ThemeContext';
 
 const navItems = [
@@ -45,7 +45,11 @@ export default function Sidebar() {
           isExpanded ? 'w-64' : 'w-16'
         }`}
       >
-        <div className="h-full theme-bg-surface rounded-2xl shadow-2xl border theme-border flex flex-col overflow-hidden">
+        <div className={`h-full rounded-2xl shadow-2xl border theme-border flex flex-col overflow-hidden ${
+          isExpanded
+            ? 'bg-[#1E1E1E] dark:bg-[#111111]'
+            : 'theme-bg-surface'
+        }`}>
           
           {/* Toggle Button */}
           <button

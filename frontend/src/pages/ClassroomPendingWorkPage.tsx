@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckSquare, AlertCircle, Filter } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { apiFetch } from '../lib/api';
 
 interface Task {
-  id: number;
+  id: string;
   category: string;
   title: string;
   dueDate: string;
@@ -17,62 +18,36 @@ export default function ClassroomPendingWorkPage() {
   const [sortBy, setSortBy] = useState('deadline');
   const [filterPriority, setFilterPriority] = useState('all');
 
-  const tasks: Task[] = [
-    {
-      id: 1,
-      category: 'Work Project',
-      title: 'Q1 Sales Report & Presentation',
-      dueDate: 'Feb 28, 2026',
-      priority: 'high',
-      progress: 75,
-      description: 'Prepare comprehensive sales analysis and present to stakeholders',
-    },
-    {
-      id: 2,
-      category: 'Personal',
-      title: 'Home Renovation Planning',
-      dueDate: 'Mar 2, 2026',
-      priority: 'high',
-      progress: 50,
-      description: 'Finalize renovation plans and get contractor quotes',
-    },
-    {
-      id: 3,
-      category: 'Finance',
-      title: 'Tax Document Preparation',
-      dueDate: 'Mar 5, 2026',
-      priority: 'medium',
-      progress: 30,
-      description: 'Gather and organize all tax documents for filing',
-    },
-    {
-      id: 4,
-      category: 'Health',
-      title: 'Fitness Program Setup',
-      dueDate: 'Mar 1, 2026',
-      priority: 'medium',
-      progress: 60,
-      description: 'Create workout schedule and meal plan',
-    },
-    {
-      id: 5,
-      category: 'Learning',
-      title: 'Online Course Completion',
-      dueDate: 'Mar 3, 2026',
-      priority: 'low',
-      progress: 20,
-      description: 'Finish remaining modules of online certification course',
-    },
-    {
-      id: 6,
-      category: 'Social',
-      title: 'Event Planning - Birthday Party',
-      dueDate: 'Mar 8, 2026',
-      priority: 'low',
-      progress: 10,
-      description: 'Plan and organize upcoming birthday celebration',
-    },
-  ];
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const data = await apiFetch<{ items: any[] }>('/classroom/pending-work');
+        setTasks(
+          (data.items ?? []).map((t) => ({
+            id: String(t.id),
+            category: String(t.course ?? 'Classroom'),
+            title: String(t.title ?? ''),
+            dueDate: t.due_at ? new Date(t.due_at).toDateString() : 'No due date',
+            priority: t.priority,
+            progress: t.progress ?? 0,
+            description: String(t.description ?? ''),
+          }))
+        );
+      } catch (e) {
+        setTasks([]);
+        setError(e instanceof Error ? e.message : 'Failed to load Classroom work. Re-login with Google to grant Classroom permission.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
+  }, []);
   const getPriorityBadgeColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -207,6 +182,16 @@ export default function ClassroomPendingWorkPage() {
 
       {/* Task List */}
       <div className="space-y-4">
+        {loading && (
+          <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#2A2A2A] text-[#A3A3A3]">
+            Loading Classroom work...
+          </div>
+        )}
+        {!loading && error && (
+          <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#C2410C]/30 text-[#EA580C]">
+            {error}
+          </div>
+        )}
         {filteredTasks.map((task) => (
           <div
             key={task.id}

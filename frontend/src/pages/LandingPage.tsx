@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { Brain, Calendar, Mail, Briefcase, Sparkles, CheckCircle } from 'lucide-react';
 import ImageWithFallback from '../components/figma/ImageWithFallback';
 

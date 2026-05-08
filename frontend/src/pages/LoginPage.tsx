@@ -1,21 +1,38 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import { Brain, Sparkles, Mail, Lock } from 'lucide-react';
-import { useAuth } from '../app/context/AuthContext';
+import { useAuth } from '../app/context/useAuth';
 import { Input } from '../components/ui/input';
 import { Checkbox } from '../components/ui/checkbox';
+import { apiFetch } from '../lib/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password);
-    navigate('/dashboard');
+    try {
+      setError('');
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    }
+  };
+
+  const continueWithGoogle = async () => {
+    setError('');
+    try {
+      const { auth_url } = await apiFetch<{ auth_url: string }>('/auth/google/connect', {}, false);
+      window.location.href = auth_url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google login failed');
+    }
   };
 
   return (
@@ -105,6 +122,7 @@ export default function LoginPage() {
             >
               Login
             </button>
+            {error && <p className="text-sm text-red-400">{error}</p>}
           </form>
 
           {/* Divider */}
@@ -113,6 +131,14 @@ export default function LoginPage() {
             <span className="text-sm text-[#A3A3A3]">OR</span>
             <div className="flex-1 h-px bg-[#2A2A2A]"></div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => void continueWithGoogle()}
+            className="w-full py-3 rounded-xl bg-[#171717] text-[#EDEDED] border border-[#2A2A2A] hover:bg-[#1E1E1E] transition-all font-semibold"
+          >
+            Continue with Google
+          </button>
 
           {/* Sign Up Link */}
           <div className="text-center">

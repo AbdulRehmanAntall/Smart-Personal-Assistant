@@ -1,14 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Settings as SettingsIcon, User, Lock, Bell, Palette, Save } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Switch } from '../components/ui/switch';
-import { useAuth } from '../app/context/AuthContext';
+import { useAuth } from '../app/context/useAuth';
 import { useTheme } from '../app/context/ThemeContext';
+import { apiFetch } from '../lib/api';
+
+const PROFILE_PICTURE_KEY = 'profile_picture';
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [integrations, setIntegrations] = useState<{
+    google: { connected: boolean; email: string; updated_at: string | null };
+  } | null>(null);
+  const [integrationsError, setIntegrationsError] = useState<string>('');
+  const [profilePicture, setProfilePicture] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem(PROFILE_PICTURE_KEY) : null
+  );
   const [username, setUsername] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -28,15 +37,64 @@ export default function SettingsPage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePicture(reader.result as string);
+        const picture = reader.result as string;
+        setProfilePicture(picture);
+        localStorage.setItem(PROFILE_PICTURE_KEY, picture);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleSaveChanges = () => {
-    // Mock save functionality
-    alert('Settings saved successfully!');
+    void apiFetch('/settings', {
+      method: 'PUT',
+      body: JSON.stringify({ username, email, notifications }),
+    }).then(() => {
+      alert('Settings saved successfully!');
+    }).catch(() => {
+      alert('Failed to save settings');
+    });
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await apiFetch<any>('/settings');
+        setUsername(data.username ?? username);
+        setEmail(data.email ?? email);
+        if (data.notifications) setNotifications(data.notifications);
+      } catch {
+        // keep local defaults
+      }
+    };
+    void load();
+  }, []);
+
+  useEffect(() => {
+    const loadIntegrations = async () => {
+      try {
+        setIntegrationsError('');
+        const data = await apiFetch<any>('/integrations/status');
+        setIntegrations(data);
+      } catch (e) {
+        setIntegrations(null);
+        setIntegrationsError(e instanceof Error ? e.message : 'Failed to load integrations');
+      }
+    };
+    void loadIntegrations();
+  }, []);
+
+  const connectGoogle = async () => {
+    setIntegrationsError('');
+    const { auth_url } = await apiFetch<{ auth_url: string }>('/integrations/google/connect');
+    window.location.href = auth_url;
+  };
+
+  const disconnectGoogle = async () => {
+    setIntegrationsError('');
+    await apiFetch('/integrations/google/disconnect', { method: 'POST' });
+    const data = await apiFetch<any>('/integrations/status');
+    setIntegrations(data);
   };
 
   return (
@@ -75,6 +133,46 @@ export default function SettingsPage() {
 
         {/* Settings Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Integrations */}
+          <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#2A2A2A]">
+            <h2 className="text-2xl font-bold mb-2 text-[#EDEDED]">Integrations</h2>
+            <p className="text-sm text-[#A3A3A3] mb-4">
+              Connect your accounts to enable real email + calendar sync.
+            </p>
+
+            {integrationsError && (
+              <div className="mb-4 p-3 rounded-xl bg-[#C2410C]/10 border border-[#C2410C]/30 text-[#EA580C] text-sm">
+                {integrationsError}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between p-4 bg-[#171717] rounded-xl border border-[#2A2A2A]">
+              <div>
+                <p className="font-semibold text-[#EDEDED]">Google (Gmail + Calendar)</p>
+                <p className="text-sm text-[#A3A3A3] mt-1">
+                  {integrations?.google?.connected
+                    ? `Connected as ${integrations.google.email || 'your Google account'}`
+                    : 'Not connected'}
+                </p>
+              </div>
+              {integrations?.google?.connected ? (
+                <button
+                  onClick={() => void disconnectGoogle()}
+                  className="px-4 py-2 rounded-xl bg-[#C2410C]/20 text-[#EA580C] border border-[#C2410C]/30 hover:bg-[#C2410C]/30 transition-all text-sm font-semibold"
+                >
+                  Disconnect
+                </button>
+              ) : (
+                <button
+                  onClick={() => void connectGoogle()}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all text-sm font-semibold"
+                >
+                  Connect Google
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Profile Section */}
           <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#2A2A2A]">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-[#EDEDED]">

@@ -1,11 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
-import { AuthProvider, useAuth } from './app/context/AuthContext';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './app/context/AuthContext';
+import { useAuth } from './app/context/useAuth';
 import { ThemeProvider } from './app/context/ThemeContext';
 import Layout from './app/components/Layout';
 // Public Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
+import GoogleOAuthCallbackPage from './pages/GoogleOAuthCallbackPage';
 // Protected Pages
 import DashboardPage from './pages/DashboardPage';
 import JobFinderPage from './pages/JobFinderPage';
@@ -15,13 +17,29 @@ import DailyNewsPage from './pages/DailyNewsPage';
 import SmartEmailPage from './pages/SmartEmailPage';
 import ClassroomPendingWorkPage from './pages/ClassroomPendingWorkPage';
 import SettingsPage from './pages/SettingsPage';
+function FullscreenLoader({ label }: { label: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 px-6">
+      <div className="text-slate-900 dark:text-slate-100 text-base">
+        {label}
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <FullscreenLoader label="Loading your session..." />;
+  }
+
   return isAuthenticated ? <Layout>{children}</Layout> : <Navigate to="/login" />;
 }
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <FullscreenLoader label="Starting app..." />;
   return isAuthenticated ? <Navigate to="/dashboard" /> : <>{children}</>;
 }
 
@@ -32,6 +50,7 @@ function AppRoutes() {
       <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
       <Route path="/signup" element={<PublicRoute><SignUpPage /></PublicRoute>} />
+      <Route path="/oauth/google" element={<GoogleOAuthCallbackPage />} />
 
       {/* Protected Routes */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

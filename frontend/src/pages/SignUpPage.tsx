@@ -1,25 +1,42 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import { Brain, Sparkles, User, Mail, Lock } from 'lucide-react';
-import { useAuth } from '../app/context/AuthContext';
+import { useAuth } from '../app/context/useAuth';
 import { Input } from '../components/ui/input';
+import { apiFetch } from '../lib/api';
 
 export default function SignUpPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const { signup } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert('Passwords do not match!');
+      setError('Passwords do not match');
       return;
     }
-    signup(username, email, password);
-    navigate('/dashboard');
+    try {
+      setError('');
+      await signup(username, email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
+    }
+  };
+
+  const continueWithGoogle = async () => {
+    setError('');
+    try {
+      const { auth_url } = await apiFetch<{ auth_url: string }>('/auth/google/connect', {}, false);
+      window.location.href = auth_url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Google signup failed');
+    }
   };
 
   return (
@@ -129,6 +146,7 @@ export default function SignUpPage() {
             >
               Sign Up
             </button>
+            {error && <p className="text-sm text-red-400">{error}</p>}
           </form>
 
           {/* Divider */}
@@ -137,6 +155,14 @@ export default function SignUpPage() {
             <span className="text-sm text-[#A3A3A3]">OR</span>
             <div className="flex-1 h-px bg-[#2A2A2A]"></div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => void continueWithGoogle()}
+            className="w-full py-3 rounded-xl bg-[#171717] text-[#EDEDED] border border-[#2A2A2A] hover:bg-[#1E1E1E] transition-all font-semibold"
+          >
+            Continue with Google
+          </button>
 
           {/* Login Link */}
           <div className="text-center">

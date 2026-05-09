@@ -9,6 +9,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design Tokens ─────────────────────────────── */
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -19,8 +20,7 @@
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -41,64 +41,36 @@
   }
 
   --background: oklch(1 0 0);
-
   --foreground: oklch(0.145 0 0);
-
   --card: oklch(1 0 0);
-
   --card-foreground: oklch(0.145 0 0);
-
   --popover: oklch(1 0 0);
-
   --popover-foreground: oklch(0.145 0 0);
-
   --primary: oklch(0.205 0 0);
-
   --primary-foreground: oklch(0.985 0 0);
-
   --secondary: oklch(0.97 0 0);
-
   --secondary-foreground: oklch(0.205 0 0);
-
   --muted: oklch(0.97 0 0);
-
   --muted-foreground: oklch(0.556 0 0);
-
   --accent-foreground: oklch(0.205 0 0);
-
   --destructive: oklch(0.577 0.245 27.325);
-
   --input: oklch(0.922 0 0);
-
   --ring: oklch(0.708 0 0);
-
   --chart-1: oklch(0.87 0 0);
-
   --chart-2: oklch(0.556 0 0);
-
   --chart-3: oklch(0.439 0 0);
-
   --chart-4: oklch(0.371 0 0);
-
   --chart-5: oklch(0.269 0 0);
-
   --radius: 0.625rem;
-
   --sidebar: oklch(0.985 0 0);
-
   --sidebar-foreground: oklch(0.145 0 0);
-
   --sidebar-primary: oklch(0.205 0 0);
-
   --sidebar-primary-foreground: oklch(0.985 0 0);
-
   --sidebar-accent: oklch(0.97 0 0);
-
   --sidebar-accent-foreground: oklch(0.205 0 0);
-
   --sidebar-border: oklch(0.922 0 0);
-
-  --sidebar-ring: oklch(0.708 0 0)}
+  --sidebar-ring: oklch(0.708 0 0);
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -111,8 +83,7 @@
     --accent-bg: rgba(192, 132, 252, 0.15);
     --accent-border: rgba(192, 132, 252, 0.5);
     --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
 
   #social .button-icon {
@@ -147,20 +118,24 @@ h1 {
   font-size: 56px;
   letter-spacing: -1.68px;
   margin: 32px 0;
+
   @media (max-width: 1024px) {
     font-size: 36px;
     margin: 20px 0;
   }
 }
+
 h2 {
   font-size: 24px;
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
+
   @media (max-width: 1024px) {
     font-size: 20px;
   }
 }
+
 p {
   margin: 0;
 }
@@ -259,8 +234,149 @@ code {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;}
+    @apply border-border outline-ring/50;
+  }
+
   body {
-    @apply bg-background text-foreground;}
+    @apply bg-background text-foreground;
+  }
+
   html {
-    @apply font-sans;}}
+    @apply font-sans;
+  }
+}
+
+/* ─── Theme Utility Classes ─────────────────────── */
+
+/* Background */
+.theme-bg-primary {
+  background-color: #0D0D0D;
+}
+
+.dark .theme-bg-primary {
+  background-color: #0D0D0D;
+}
+
+.light .theme-bg-primary {
+  background-color: #f5f5f5;
+}
+
+.theme-bg-surface {
+  background-color: #1E1E1E;
+}
+
+.dark .theme-bg-surface {
+  background-color: #1E1E1E;
+}
+
+.light .theme-bg-surface {
+  background-color: #ffffff;
+}
+
+/* Cards — this is the key fix: cards turn white in light mode */
+.light .theme-card,
+.light [class*="bg-[#1E1E1E]"],
+.light [class*="bg-[#171717]"] {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Light-mode card helper (used in login/signup) */
+.light .light-mode-card {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Text */
+.theme-text-primary {
+  color: #EDEDED;
+}
+
+.dark .theme-text-primary {
+  color: #EDEDED;
+}
+
+.light .theme-text-primary {
+  color: #111111;
+}
+
+.theme-text-secondary {
+  color: #A3A3A3;
+}
+
+.dark .theme-text-secondary {
+  color: #A3A3A3;
+}
+
+.light .theme-text-secondary {
+  color: #555555;
+}
+
+/* Borders */
+.theme-border {
+  border-color: #2A2A2A;
+}
+
+.dark .theme-border {
+  border-color: #2A2A2A;
+}
+
+.light .theme-border {
+  border-color: #e5e7eb;
+}
+
+/* ─── Light-mode overrides for hardcoded dark colors ─── */
+
+/* Card panels */
+.light .bg-\[\#1E1E1E\] {
+  background-color: #ffffff !important;
+}
+
+.light .bg-\[\#171717\] {
+  background-color: #f3f4f6 !important;
+}
+
+.light .bg-\[\#111111\] {
+  background-color: #f9fafb !important;
+}
+
+.light .bg-\[\#0D0D0D\] {
+  background-color: #f5f5f5 !important;
+}
+
+/* Borders */
+.light .border-\[\#2A2A2A\] {
+  border-color: #e5e7eb !important;
+}
+
+/* Text */
+.light .text-\[\#EDEDED\] {
+  color: #111111 !important;
+}
+
+.light .text-\[\#A3A3A3\] {
+  color: #555555 !important;
+}
+
+.light .text-\[\#D4D4D4\] {
+  color: #222222 !important;
+}
+
+.light .text-\[\#6B6B6B\] {
+  color: #777777 !important;
+}
+
+/* Dividers and muted backgrounds */
+.light .divide-\[\#2A2A2A\]>*+* {
+  border-color: #e5e7eb !important;
+}
+
+/* Sidebar in light mode */
+.light .bg-\[\#111111\] {
+  background-color: #ffffff !important;
+}
+
+/* Email sidebar panel */
+.light .max-h-\[650px\] {
+  background-color: #ffffff !important;
+}

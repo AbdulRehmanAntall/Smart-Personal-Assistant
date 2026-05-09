@@ -1,162 +1,227 @@
-import { useState } from 'react';
-import { Send, Bot, User } from 'lucide-react';
-import { Input } from '../components/ui/input';
-import { apiFetch } from '../lib/api';
+// import { useState } from 'react';
+// import { Send, Bot, User } from 'lucide-react';
+// import { Input } from '../components/ui/input';
+// import { apiFetch } from '../lib/api';
 
-interface Message {
-  id: number;
-  text: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
-}
+// interface Message {
+//   id: number;
+//   text: string;
+//   sender: 'user' | 'ai';
+//   timestamp: Date;
+// }
+
+// export default function AvailabilityManagerPage() {
+//   const [messages, setMessages] = useState<Message[]>([
+//     {
+//       id: 1,
+//       text: "Hello! I'm your AI Availability Assistant. I can help you manage your schedule, find free time slots, and optimize your calendar. How can I assist you today?",
+//       sender: 'ai',
+//       timestamp: new Date(),
+//     },
+//   ]);
+//   const [inputText, setInputText] = useState('');
+//   const [isSending, setIsSending] = useState(false);
+
+//   const handleSendMessage = (e: React.FormEvent) => {
+//     e.preventDefault();
+//     if (!inputText.trim() || isSending) return;
+//     const messageText = inputText;
+//     setInputText('');
+//     setIsSending(true);
+
+//     // Add user message
+//     const userMessage: Message = {
+//       id: messages.length + 1,
+//       text: messageText,
+//       sender: 'user',
+//       timestamp: new Date(),
+//     };
+
+//     setMessages([...messages, userMessage]);
+
+//     void (async () => {
+//       try {
+//         const data = await apiFetch<{ reply: string }>('/assistant/availability/chat', {
+//           method: 'POST',
+//           body: JSON.stringify({ message: messageText }),
+//         });
+//         const aiResponse: Message = {
+//           id: messages.length + 2,
+//           text: data.reply,
+//           sender: 'ai',
+//           timestamp: new Date(),
+//         };
+//         setMessages(prev => [...prev, aiResponse]);
+//       } catch (e) {
+//         const aiResponse: Message = {
+//           id: messages.length + 2,
+//           text: e instanceof Error ? e.message : 'Sorry, I could not process that request right now.',
+//           sender: 'ai',
+//           timestamp: new Date(),
+//         };
+//         setMessages(prev => [...prev, aiResponse]);
+//       } finally {
+//         setIsSending(false);
+//       }
+//     })();
+//   };
+
+//   return (
+//     <div className="space-y-6">
+//       {/* Header */}
+//       <div className="bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] rounded-3xl p-8 text-white shadow-xl">
+//         <h1 className="text-4xl font-bold mb-2">AI Availability Assistant</h1>
+//         <p className="text-lg text-white/90">Chat with AI to manage your schedule and availability</p>
+//       </div>
+
+//       {/* Chat Container */}
+//       <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl shadow-xl border border-[#2A2A2A] overflow-hidden">
+//         {/* Chat Messages */}
+//         <div className="h-[600px] overflow-y-auto p-6 space-y-4">
+//           {messages.map((message) => (
+//             <div
+//               key={message.id}
+//               className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+//             >
+//               {/* Avatar */}
+//               <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+//                 message.sender === 'ai'
+//                   ? 'bg-gradient-to-br from-purple-500 to-blue-500'
+//                   : 'bg-gradient-to-br from-pink-400 to-purple-400'
+//               }`}>
+//                 {message.sender === 'ai' ? (
+//                   <Bot className="w-5 h-5 text-white" />
+//                 ) : (
+//                   <User className="w-5 h-5 text-white" />
+//                 )}
+//               </div>
+
+//               {/* Message Bubble */}
+//               <div
+//                 className={`max-w-[70%] rounded-2xl p-4 ${
+//                   message.sender === 'ai'
+//                     ? 'bg-[#171717] border border-[#2A2A2A]'
+//                     : 'bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] text-white'
+//                 }`}
+//               >
+//                 <p className={`whitespace-pre-line ${
+//                   message.sender === 'ai' ? 'text-[#EDEDED]' : 'text-white'
+//                 }`}>
+//                   {message.text}
+//                 </p>
+//                 <p className={`text-xs mt-2 ${
+//                   message.sender === 'ai' ? 'text-[#A3A3A3]' : 'text-white/70'
+//                 }`}>
+//                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+//                 </p>
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+
+//         {/* Input Area */}
+//         <div className="border-t border-[#2A2A2A] p-4 bg-[#171717]">
+//           <form onSubmit={handleSendMessage} className="flex gap-3">
+//             <Input
+//               type="text"
+//               placeholder="Ask me about your availability, schedule meetings, or get time management tips..."
+//               value={inputText}
+//               onChange={(e) => setInputText(e.target.value)}
+//               className="flex-1 h-12 bg-[#1E1E1E] border-[#2A2A2A] text-[#EDEDED] rounded-xl"
+//             />
+//             <button
+//               type="submit"
+//               className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+//               disabled={!inputText.trim() || isSending}
+//             >
+//               <Send className="w-5 h-5" />
+//             </button>
+//           </form>
+//         </div>
+//       </div>
+
+//       {/* Quick Actions */}
+//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+//         {[
+//           'When am I free this week?',
+//           'Schedule study time for finals',
+//           'Show my busiest days',
+//         ].map((suggestion, index) => (
+//           <button
+//             key={index}
+//             onClick={() => {
+//               setInputText(suggestion);
+//             }}
+//             className="p-4 bg-[#1E1E1E] backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg hover:shadow-[#7C3AED]/10 transition-all border border-[#2A2A2A] text-left text-sm text-[#EDEDED] hover:bg-[#171717]"
+//           >
+//             {suggestion}
+//           </button>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
+
+import { CalendarClock, Construction, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AvailabilityManagerPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: "Hello! I'm your AI Availability Assistant. I can help you manage your schedule, find free time slots, and optimize your calendar. How can I assist you today?",
-      sender: 'ai',
-      timestamp: new Date(),
-    },
-  ]);
-  const [inputText, setInputText] = useState('');
-  const [isSending, setIsSending] = useState(false);
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim() || isSending) return;
-    const messageText = inputText;
-    setInputText('');
-    setIsSending(true);
-
-    // Add user message
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: messageText,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-
-    setMessages([...messages, userMessage]);
-
-    void (async () => {
-      try {
-        const data = await apiFetch<{ reply: string }>('/assistant/availability/chat', {
-          method: 'POST',
-          body: JSON.stringify({ message: messageText }),
-        });
-        const aiResponse: Message = {
-          id: messages.length + 2,
-          text: data.reply,
-          sender: 'ai',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, aiResponse]);
-      } catch (e) {
-        const aiResponse: Message = {
-          id: messages.length + 2,
-          text: e instanceof Error ? e.message : 'Sorry, I could not process that request right now.',
-          sender: 'ai',
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, aiResponse]);
-      } finally {
-        setIsSending(false);
-      }
-    })();
-  };
+  const navigate = useNavigate();
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-full flex flex-col space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] rounded-3xl p-8 text-white shadow-xl">
-        <h1 className="text-4xl font-bold mb-2">AI Availability Assistant</h1>
-        <p className="text-lg text-white/90">Chat with AI to manage your schedule and availability</p>
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-2xl bg-white/10">
+            <CalendarClock className="w-8 h-8" />
+          </div>
+
+          <div>
+            <h1 className="text-4xl font-bold">
+              AI Availability Assistant
+            </h1>
+            <p className="text-lg text-white/90 mt-2">
+              Smart scheduling and availability management
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Chat Container */}
-      <div className="bg-[#1E1E1E] backdrop-blur-sm rounded-2xl shadow-xl border border-[#2A2A2A] overflow-hidden">
-        {/* Chat Messages */}
-        <div className="h-[600px] overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-            >
-              {/* Avatar */}
-              <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                message.sender === 'ai'
-                  ? 'bg-gradient-to-br from-purple-500 to-blue-500'
-                  : 'bg-gradient-to-br from-pink-400 to-purple-400'
-              }`}>
-                {message.sender === 'ai' ? (
-                  <Bot className="w-5 h-5 text-white" />
-                ) : (
-                  <User className="w-5 h-5 text-white" />
-                )}
-              </div>
-
-              {/* Message Bubble */}
-              <div
-                className={`max-w-[70%] rounded-2xl p-4 ${
-                  message.sender === 'ai'
-                    ? 'bg-[#171717] border border-[#2A2A2A]'
-                    : 'bg-gradient-to-br from-[#7C3AED] to-[#8B5CF6] text-white'
-                }`}
-              >
-                <p className={`whitespace-pre-line ${
-                  message.sender === 'ai' ? 'text-[#EDEDED]' : 'text-white'
-                }`}>
-                  {message.text}
-                </p>
-                <p className={`text-xs mt-2 ${
-                  message.sender === 'ai' ? 'text-[#A3A3A3]' : 'text-white/70'
-                }`}>
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
-              </div>
+      {/* Feature unavailable card */}
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-2xl bg-[#1E1E1E] border border-[#2A2A2A] rounded-3xl shadow-xl p-10">
+          <div className="flex flex-col items-center text-center">
+            {/* Icon */}
+            <div className="w-20 h-20 rounded-full bg-[#171717] border border-[#2A2A2A] flex items-center justify-center mb-6">
+              <Construction className="w-10 h-10 text-[#8B5CF6]" />
             </div>
-          ))}
-        </div>
 
-        {/* Input Area */}
-        <div className="border-t border-[#2A2A2A] p-4 bg-[#171717]">
-          <form onSubmit={handleSendMessage} className="flex gap-3">
-            <Input
-              type="text"
-              placeholder="Ask me about your availability, schedule meetings, or get time management tips..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="flex-1 h-12 bg-[#1E1E1E] border-[#2A2A2A] text-[#EDEDED] rounded-xl"
-            />
+            {/* Main message */}
+            <h2 className="text-3xl font-bold text-[#EDEDED] mb-4">
+              Feature Not Available Right Now
+            </h2>
+
+            <p className="text-[#A3A3A3] text-lg leading-relaxed max-w-xl">
+              The Availability Manager is currently under development.
+              We’re actively working on improving scheduling, smart
+              calendar insights, and availability planning.
+            </p>
+
+            <p className="text-[#737373] text-sm mt-4">
+              This feature will be available in a future update.
+            </p>
+
+            {/* Button */}
             <button
-              type="submit"
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!inputText.trim() || isSending}
+              onClick={() => navigate(-1)}
+              className="mt-8 flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all"
             >
-              <Send className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
+              Go Back
             </button>
-          </form>
+          </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          'When am I free this week?',
-          'Schedule study time for finals',
-          'Show my busiest days',
-        ].map((suggestion, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              setInputText(suggestion);
-            }}
-            className="p-4 bg-[#1E1E1E] backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg hover:shadow-[#7C3AED]/10 transition-all border border-[#2A2A2A] text-left text-sm text-[#EDEDED] hover:bg-[#171717]"
-          >
-            {suggestion}
-          </button>
-        ))}
       </div>
     </div>
   );

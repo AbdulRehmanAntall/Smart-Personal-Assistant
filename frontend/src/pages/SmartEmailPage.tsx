@@ -342,14 +342,23 @@ export default function SmartEmailPage() {
               </div>
 
               {/* Actions */}
-              <div className="p-4 sm:p-6 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#171717] dark:bg-[#171717] light:bg-gray-100 text-[#EDEDED] dark:text-[#EDEDED] light:text-gray-700 border border-[#2A2A2A] dark:border-[#2A2A2A] light:border-gray-200 hover:border-[#7C3AED] transition-all text-sm font-medium">
+              <div className="p-4 sm:p-6 pt-0 grid grid-cols-1 gap-3">
+                <button 
+                  onClick={() => {
+                    if (selectedEmail) {
+                      const emailId = selectedEmail.id;
+                      setEmails(prev => prev.filter(e => e.id !== emailId));
+                      setSelectedEmail(null);
+                      apiFetch(`/emails/${encodeURIComponent(emailId)}/mark-read`, {
+                        method: 'POST',
+                        body: JSON.stringify({ read: true })
+                      }).catch(() => {});
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#171717] dark:bg-[#171717] light:bg-gray-100 text-[#EDEDED] dark:text-[#EDEDED] light:text-gray-700 border border-[#2A2A2A] dark:border-[#2A2A2A] light:border-gray-200 hover:border-[#7C3AED] transition-all text-sm font-medium"
+                >
                   <CheckSquare className="w-4 h-4 sm:w-5 sm:h-5" />
                   Mark as Done
-                </button>
-                <button className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white hover:scale-[1.02] transition-all text-sm font-medium shadow-lg shadow-[#7C3AED]/20">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Add to Calendar
                 </button>
               </div>
             </div>

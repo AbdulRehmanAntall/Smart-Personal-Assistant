@@ -12,41 +12,52 @@ interface Task {
   priority: 'high' | 'medium' | 'low';
   progress: number;
   description: string;
+  url: string;
 }
 
 export default function ClassroomPendingWorkPage() {
   const [sortBy, setSortBy] = useState('deadline');
   const [filterPriority, setFilterPriority] = useState('all');
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    try {
+      const cached = typeof window !== 'undefined' ? localStorage.getItem('classroom_cache') : null;
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(tasks.length === 0);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const load = async () => {
       try {
-        setLoading(true);
+        if (tasks.length === 0) setLoading(true);
         setError('');
         const data = await apiFetch<{ items: any[] }>('/classroom/pending-work');
-        setTasks(
-          (data.items ?? []).map((t) => ({
-            id: String(t.id),
-            category: String(t.course ?? 'Classroom'),
-            title: String(t.title ?? ''),
-            dueDate: t.due_at ? new Date(t.due_at).toDateString() : 'No due date',
-            priority: t.priority,
-            progress: t.progress ?? 0,
-            description: String(t.description ?? ''),
-          }))
-        );
+        const parsedTasks = (data.items ?? []).map((t) => ({
+          id: String(t.id),
+          category: String(t.course ?? 'Classroom'),
+          title: String(t.title ?? ''),
+          dueDate: t.due_at ? new Date(t.due_at).toDateString() : 'No due date',
+          priority: t.priority,
+          progress: t.progress ?? 0,
+          description: String(t.description ?? ''),
+          url: String(t.alternateLink || t.url || 'https://classroom.google.com')
+        }));
+        setTasks(parsedTasks);
+        localStorage.setItem('classroom_cache', JSON.stringify(parsedTasks));
       } catch (e) {
-        setTasks([]);
-        setError(e instanceof Error ? e.message : 'Failed to load Classroom work. Re-login with Google to grant Classroom permission.');
+        if (tasks.length === 0) {
+          setError(e instanceof Error ? e.message : 'Failed to load Classroom work. Re-login with Google to grant Classroom permission.');
+        }
       } finally {
         setLoading(false);
       }
     };
     void load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const getPriorityBadgeColor = (priority: string) => {
     switch (priority) {
@@ -216,20 +227,19 @@ export default function ClassroomPendingWorkPage() {
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-[#A3A3A3]">Progress</span>
-                <span className="font-semibold text-[#EDEDED]">{task.progress}%</span>
-              </div>
-              <Progress value={task.progress} className="h-2" />
-              
               <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center gap-2 text-sm text-[#A3A3A3]">
                   <AlertCircle className="w-4 h-4" />
                   <span>Due: {task.dueDate}</span>
                 </div>
-                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white text-sm hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all">
-                  Update Progress
-                </button>
+                <a 
+                  href={task.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] text-white text-sm font-semibold hover:shadow-lg hover:shadow-[#7C3AED]/30 transition-all inline-block"
+                >
+                  Open
+                </a>
               </div>
             </div>
           </div>
